@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-send_message() {
+encode_message() {
   header=$1
   payload=$2
 
