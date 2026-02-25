@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIPE_IN="tmp/in"
-PIPE_OUT="tmp/out"
+PIPE_DIR=$(mktemp -d)
+PIPE_IN="$PIPE_DIR/in"
+PIPE_OUT="$PIPE_DIR/out"
 
 cleanup() {
-  rm -r tmp
+  rm -rf $PIPE_DIR
 }
 
 trap cleanup EXIT
 
-mkdir tmp
 mkfifo "$PIPE_IN" "$PIPE_OUT"

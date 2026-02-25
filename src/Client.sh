@@ -8,16 +8,13 @@ start_client() {
 
   printf "Connecting to $ip:$port\n"
 
-  nc
+  cat $PIPE_IN | nc $ip $port >$PIPE_OUT &
+
+  (
+    while read line; do
+      echo "Received: $line"
+    done <$PIPE_OUT
+  ) &
+
+  echo "Hello server, I'm client!" >$PIPE_IN
 }
-
-# # sender → socket
-# cat in | nc localhost 1234 > out &
-
-# # receive parser
-# while read line; do
-#     echo "RECV: $line"
-# done < out
-
-# # send manually
-# echo "hello" > in
