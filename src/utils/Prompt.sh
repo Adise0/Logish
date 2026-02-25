@@ -1,4 +1,5 @@
-#!bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 SELECTED="\033[4;38;5;45m"
 RESET="\033[0m"

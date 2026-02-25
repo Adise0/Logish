@@ -1,4 +1,5 @@
-#!bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 source "src/utils/Prompt.sh"
 source "src/utils/CreatePipes.sh"

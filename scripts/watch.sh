@@ -1,5 +1,4 @@
-#!bin/bash
-
+#!/usr/bin/env bash
 set -euo pipefail
 
 printf "[Pre-jobs] Running pre-watch jobs...\n"
