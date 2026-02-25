@@ -50,14 +50,17 @@ printf "[Pre-jobs] Pre-watch jobs complete!\n"
 
 printf "[Watcher] Starting watcher\n"
 
-watchexec -w src -e sh -r --stop-signal SIGTERM --wrap-process=none \
+watchexec -w src -e sh -r \
+  --stop-signal SIGTERM \
+  --wrap-process=none \
   -E RUN_AFTER="$run_after" \
   -E APP_NAME="$appName" \
   -E BUILD_DIR="$buildDir" \
   -- bash -lc '
+    set -m
     clear
 
     printf "[Watcher] Change detected\n"
 
-    source scripts/exec.sh
+    exec bash -lc "source src/Logish.sh"
   '

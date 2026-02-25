@@ -5,8 +5,6 @@ SELECTED="\033[4;38;5;45m"
 RESET="\033[0m"
 
 prompt() {
-  echo -ne "\e[?25l" >&2
-  trap 'echo -ne "\e[?25h" >&2' EXIT
 
   local text="$1"
   shift 1
@@ -53,10 +51,10 @@ prompt() {
     print
     prevOption=$currentOption
 
-    read -rsN1 key </dev/tty
+    read -rsN1 key
 
     if [[ $key == $'\e' ]]; then
-      read -rsN2 -t 0.05 rest </dev/tty || rest=''
+      read -rsN2 -t 0.05 rest || rest=''
       key+="$rest"
     fi
 

@@ -3,18 +3,35 @@ set -euo pipefail
 
 start_client() {
   printf "Starting client...\n"
-  read -r -p "Ip to connect to: " ip
-  read -r -p "Port: " port
 
-  printf "Connecting to $ip:$port\n"
+  default_ip=localhost
+  default_port=5555
 
-  cat $PIPE_IN | nc $ip $port >$PIPE_OUT &
+  read -r -p "Ip to connect to (Default: $default_ip): " ip
+  read -r -p "Port (Default: $default_port): " port
+  [[ -z "${ip}" ]] && ip=$default_ip
+  [[ -z "${port}" ]] && port=$default_port
 
-  (
-    while read line; do
-      echo "Received: $line"
-    done <$PIPE_OUT
-  ) &
+  if ! nc -z -w 1 "$ip" "$port" 2>/dev/null; then
+    echo "❌ Cannot connect to $ip:$port"
+    return 1
+  fi
 
-  echo "Hello server, I'm client!" >$PIPE_IN
+  coproc NC { nc "$ip" "$port" 2>/dev/null; }
+  nc_pid=$NC_PID
+
+  exec 3<&"${NC[0]}"
+  exec 4>&"${NC[1]}"
+
+  {
+    while IFS= read -r line <&3; do
+      printf "Received: %s\n" "$line"
+    done
+  } &
+  reader_pid=$!
+
+  printf "✅ Connected\n"
+  printf "%s\n" "Hello server, I'm client!" >&4
+
+  wait "$nc_pid"
 }
