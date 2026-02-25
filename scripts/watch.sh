@@ -51,7 +51,7 @@ printf "[Pre-jobs] Pre-watch jobs complete!\n"
 
 printf "[Watcher] Starting watcher\n"
 
-watchexec -w src -e sh -r --stop-signal SIGTERM \
+watchexec -w src -e sh -r --stop-signal SIGTERM --wrap-process=none \
   -E RUN_AFTER="$run_after" \
   -E APP_NAME="$appName" \
   -E BUILD_DIR="$buildDir" \
