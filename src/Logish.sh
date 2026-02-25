@@ -35,9 +35,9 @@ cleanup_all() {
 }
 trap cleanup_all EXIT INT TERM
 
+source "src/utils/Messages.sh"
 source "src/utils/Prompt.sh"
 source "src/Client.sh"
-
 source "src/Server.sh"
 
 type=$(prompt "Choose an option:" "Client" "Server")

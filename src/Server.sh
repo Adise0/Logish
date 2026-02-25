@@ -15,32 +15,61 @@ start_server() {
   printf "(Waiting for clients...)\n"
 
   while ((!SHUTTING_DOWN)); do
-    # Start a single listening session (one client connection per loop)
     coproc NC { nc -l "$port" 2>/dev/null; }
     nc_pid=$NC_PID
 
-    # Duplicate coproc fds to stable ones (so background reads don't get Bad FD)
     exec 3<&"${NC[0]}"
     exec 4>&"${NC[1]}"
 
     local connected=0
+    local hello_done=0
+    local kill_conn=0
 
     while IFS= read -r line <&3; do
       if ((connected == 0)); then
         printf "Client connected\n"
         connected=1
       fi
+
+      decode_message "$line"
+
+      if ((hello_done == 0)); then
+        if [[ $header != "HELLO" ]]; then
+          printf '%s\n' "$(send_message "KO_HEADER" "")" >&4
+          sleep 0.05
+          kill_conn=1
+          break
+        else
+          hello_done=1
+          printf '%s\n' "$(send_message "OK" "")" >&4
+          # continue;  # optional
+        fi
+      fi
+
       printf "Received: %s\n" "$line"
       ((SHUTTING_DOWN)) && break
     done
 
+    # If we want to drop just this connection:
+    if ((kill_conn)); then
+      exec 3<&- 4>&-
+      kill "$nc_pid" 2>/dev/null || true
+      wait "$nc_pid" 2>/dev/null || true
+      printf "Client disconnected (killed)\n\n"
+      continue
+    fi
+
+    # Server shutdown:
     if ((SHUTTING_DOWN)); then
+      exec 3<&- 4>&-
       kill "$nc_pid" 2>/dev/null || true
       wait "$nc_pid" 2>/dev/null || true
       break
     fi
 
+    # Normal disconnect:
     wait "$nc_pid" 2>/dev/null || true
+    exec 3<&- 4>&-
 
     if ((connected == 1)); then
       printf "Client disconnected\n\n"
